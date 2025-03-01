@@ -1,42 +1,72 @@
 import "dart:convert";
-
 import "package:ecom_crud_api/utils/urls.dart";
-import "package:http/http.dart"as http;
+import "package:http/http.dart" as http;
+import "model/model.dart";
 
 class ProductController {
+  List<Data> product = [];
 
-  List product=[];
-
-  Future<void>fetchProduct() async{
+  Future<void> fetchProduct() async {
     final response = await http.get(Uri.parse(Urls.readProduct));
     // print(response.body);
-    if(response.statusCode==200){
-      final data= jsonDecode(response.body);
-      product=data["data"]; // api data ar data parameter ar length
+    if (response.statusCode == 200) {
 
+      final data = jsonDecode(response.body);
+
+      Model model = Model.fromJson(data);
+
+      product = model.data ?? []; // jodi data ase data pass hobe nahole empty list show hobe
+
+      // product=data["data"]; // api data ar data parameter ar length
     }
     print(product);
   }
 
-  Future<void>createProduct(String name, img, int  qty, totalPrice, price ) async{
+  Future<void> createProduct(
+      String name, img, int qty, totalPrice, price) async {
     final response = await http.post(Uri.parse(Urls.createProduct),
-    headers:
-    {
-      "Content-Type": "application/json"
-    },
-      body: jsonEncode({
-        "ProductName": name,
-        "ProductCode": DateTime.now().millisecondsSinceEpoch,
-        "Img": img,
-        "Qty": qty,
-        "UnitPrice": price,
-        "TotalPrice": totalPrice
-      })
-    );
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "ProductName": name,
+          "ProductCode": DateTime.now().millisecondsSinceEpoch,
+          "Img": img,
+          "Qty": qty,
+          "UnitPrice": price,
+          "TotalPrice": totalPrice
+        }));
 
-    if(response.statusCode==201){
+    if (response.statusCode == 201) {
       fetchProduct();
     }
-
   }
+
+  Future<void> updateProduct(
+      String id, name, img, int qty, totalPrice, price) async {
+    final response = await http.post(Uri.parse(Urls.updateProduct(id)),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "ProductName": name,
+          "ProductCode": DateTime.now().microsecondsSinceEpoch,
+          "Img": img,
+          "Qty": qty,
+          "UnitPrice": price,
+          "TotalPrice": totalPrice
+        }));
+
+    if (response.statusCode == 201) {
+      fetchProduct();
+    }
+  }
+
+  Future<bool> deleteProduct(String id) async {
+
+    final response = await http.get(Uri.parse(Urls.deleteProduct(id)));
+
+    if (response.statusCode == 200) {
+      return true;
+    }else{
+      return false;
+    }
+  }
+
 }
